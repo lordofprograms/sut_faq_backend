@@ -1,0 +1,28 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+   "mappings": {
+    "dynamic": "true",
+    "_source": {
+      "enabled": "true"
+    },
+    "properties": {
+      "question": {
+        "type": "text"
+      },
+      "answer": {
+        "type": "text"
+      },
+      "question_vector": {
+        "type": "dense_vector",
+        "dims": 768
+      },
+      "answer_vector": {
+        "type": "dense_vector",
+        "dims": 768
+      }
+    }
+  }
+}

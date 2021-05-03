@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  faq_service:
+    build: ./app
+    container_name: faq_service
+    command: sh -c "python app/src/utils/data_to_elastic.py && uvicorn app.src.main:app --reload --host 0.0.0.0 --port 80"
+    environment:
+      - ELASTIC_IP=10.5.0.5
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - UPDATE_DB=${UPDATE_DB}
+      - WAIT_HOSTS=10.5.0.5:9200
+    depends_on:
+      - elastic
+    volumes:
+      - ./app/:/app
+    ports:
+      - 80:80
+    networks:
+      app_network:
+        ipv4_address: 10.5.0.6
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    container_name: elastic
+    environment:
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elastic-data/:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      app_network:
+        ipv4_address: 10.5.0.5
+
+networks:
+  app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/24
+
+volumes:
+  faq_service:
+  elastic-data:
